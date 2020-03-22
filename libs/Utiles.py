@@ -14,7 +14,11 @@
 import calendar
 import platform
 from configparser import ConfigParser
+from email.mime.application import MIMEApplication
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 from logging.handlers import RotatingFileHandler
+from smtplib import SMTP
 
 from PyQt5 import QtGui
 from PyQt5.QtWidgets import QFileDialog
@@ -158,6 +162,11 @@ def inicializar_y_capturar_excepciones(func):
                 self.Traceback, self.Excepcion
             )
             motivo = "Se envia informe de errores de {}".format(LeerIni(clave='empresa', key='FACTURA'))
+            # servidor = ParamSist.ObtenerParametro("SERVER_SMTP")
+            # clave = ParamSist.ObtenerParametro("CLAVE_SMTP")
+            # usuario = ParamSist.ObtenerParametro("USUARIO_SMTP")
+            # puerto = ParamSist.ObtenerParametro("PUERTO_SMTP") or 587
+            #
             pyemail.Conectar(servidor=Constantes.SERVER_SMTP,
                              usuario=Constantes.USUARIO_SMTP,
                              clave=Constantes.CLAVE_SMTP,
@@ -168,6 +177,8 @@ def inicializar_y_capturar_excepciones(func):
                 Ventanas.showAlert("Error", "{} {}".format(
                     pyemail.Excepcion, pyemail.Traceback
                 ))
+            # envia_correo(from_address=remitente, to_address=destinatario,
+            #              message=mensaje, subject=motivo)
             if self.LanzarExcepciones:
                 raise
         finally:
@@ -228,16 +239,9 @@ def FinMes(hFecha=None):
 
 def GuardarArchivo(caption="Guardar archivo", directory="", filter="", filename=""):
 
-    #dialog = QFileDialog()
-    #dialog.selectFile(filename)
-    #dialog.setDirectory(directory)
-    #dialog.setAcceptMode(QFileDialog.AcceptSave)
-    #dialog.setFileMode(filter)
     cArchivo = QFileDialog.getSaveFileName(caption=caption,
                                            directory=join(directory, filename),
                                            filter=filter)[0]
-    #dialog.exec_()
-    #cArchivo = dialog.selectedFiles()[0]
     print(cArchivo)
     return cArchivo if cArchivo else ''
 
@@ -287,3 +291,39 @@ def openFileNameDialog(form=None, files=None, title='Abrir', filename=''):
         return fileName
     else:
         return ''
+
+def envia_correo(from_address = '', to_address = '', message = '', subject = '', password_email = '', to_cc='',
+                 smtp_server='', smtp_port=587, files=''):
+    smtp_email = smtp_server
+    ok = True
+    mime_message = MIMEMultipart('related')
+    mime_message["From"] = from_address
+    mime_message["To"] = to_address
+    mime_message["Subject"] = subject
+    if to_cc:
+        mime_message["Cc"] = to_cc
+    mime_message.attach(MIMEText(message, "plain"))
+    if files:
+        if not isinstance(files, list):
+            files = [files,]
+        for archivo in files:
+            part = MIMEApplication(open(archivo, "rb").read())
+            part.add_header('Content-Disposition', 'attachment',
+                            filename=os.path.basename(archivo))
+            mime_message.attach(part)
+
+    try:
+        smtp = SMTP(smtp_email, smtp_port)
+        smtp.ehlo()
+        smtp.starttls()
+
+        smtp.login(from_address, password_email)
+        smtp.sendmail(from_address, [to_address, to_cc], mime_message.as_string())
+        smtp.quit()
+        err_msg = ''
+    except:
+        err_msg = sys.exc_info()[1]
+        logging.info(err_msg)
+        ok = False
+
+    return ok, err_msg

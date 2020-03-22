@@ -4,7 +4,7 @@ from PyQt5.QtCore import QSize
 from libs import Ventanas
 from libs.Botones import Boton
 from libs.Etiquetas import Etiqueta
-from libs.Utiles import inicializar_y_capturar_excepciones
+from libs.Utiles import inicializar_y_capturar_excepciones, imagen
 from modelos import Localidades, Tipodoc, Tiporesp, Impuestos
 from modelos.Clientes import Cliente
 from vistas.ABM import ABM
@@ -30,21 +30,25 @@ class ClientesView(ABM):
         self.lblNombreLocalidad = Etiqueta()
         self.layoutLocalidad.addWidget(self.lblNombreLocalidad)
         self.controles['localidad'].widgetNombre = self.lblNombreLocalidad
-        self.layoutDocumento = self.ArmaEntrada(nombre='tipodocu', control=Tipodoc.Valida())
+        self.layoutDocumento = self.ArmaEntrada(nombre='tipodocu', control=Tipodoc.ComboTipoDoc(),
+                                                texto="Tipo de docuemnto")
         self.lblNombreTipodoc = Etiqueta()
         self.layoutDocumento.addWidget(self.lblNombreTipodoc)
         self.controles['tipodocu'].widgetNombre = self.lblNombreTipodoc
         self.ArmaEntrada(nombre='dni', boxlayout=self.layoutDocumento)
         self.ArmaEntrada(nombre='cuit', boxlayout=self.layoutDocumento)
-        self.ArmaEntrada(nombre='tiporesp', boxlayout=self.layoutDocumento, control=Tiporesp.Valida())
-        self.lblNombreTiporesp = Etiqueta()
-        self.layoutDocumento.addWidget(self.lblNombreTiporesp)
-        self.controles['tiporesp'].widgetNombre = self.lblNombreTiporesp
-        self.layoutImpuesto = self.ArmaEntrada(nombre='percepcion', control=Impuestos.Valida())
+        self.layoutImpuesto = self.ArmaEntrada(nombre='percepcion', control=Impuestos.ComboImpuesto(),
+                                               texto="Tipo de impuesto")
         self.lblNombreImpuesto = Etiqueta()
         self.layoutImpuesto.addWidget(self.lblNombreImpuesto)
         self.controles['percepcion'].widgetNombre = self.lblNombreImpuesto
         self.campoFoco = self.controles['nombre']
+
+        self.ArmaEntrada(nombre='tiporesp', boxlayout=self.layoutImpuesto, control=Tiporesp.Combo(),
+                         texto="Responsabilidad frente al iva")
+        self.lblNombreTiporesp = Etiqueta()
+        self.layoutDocumento.addWidget(self.lblNombreTiporesp)
+        self.controles['tiporesp'].widgetNombre = self.lblNombreTiporesp
 
     @inicializar_y_capturar_excepciones
     def btnAceptarClicked(self, *args, **kwargs):
@@ -79,7 +83,7 @@ class ClientesView(ABM):
         ABM.btnAceptarClicked(self)
 
     def BotonesAdicionales(self):
-        self.btnEmail = Boton(self.tabLista, imagen="imagenes/email.png", tamanio=QSize(32,32),
+        self.btnEmail = Boton(self.tabLista, texto="Email Cliente", imagen=imagen("email.png"), tamanio=QSize(32,32),
                                 tooltip='Agrega email del cliente')
         self.btnEmail.setObjectName("btnEmail")
         self.horizontalLayout.addWidget(self.btnEmail)

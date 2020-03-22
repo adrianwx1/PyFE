@@ -7,6 +7,7 @@ from PyQt5.QtWidgets import QApplication, QMenu
 from controladores.ABMGrupos import ABMGruposController
 from controladores.ABMImpuestos import ABMImpuestoController
 from controladores.ABMParametrosSistema import ABMParamSistController
+from controladores.ABMTipoDocumentos import ABMTipoDocumentoController
 from controladores.Articulos import ArticulosController
 from controladores.CargaFacturasProveedor import CargaFacturaProveedorController
 from controladores.CentroCostos import CentroCostoController
@@ -30,6 +31,7 @@ from controladores.Proveedores import ProveedoresController
 from controladores.RG3685Compras import RG3685ComprasController
 from controladores.RG3685Ventas import RG3685VentasController
 from controladores.ReImprimeFactura import ReImprimeFacturaController
+from controladores.RindeCAEAIndividual import RindeCAEAIndividualController
 from controladores.TipoComprobantes import TipoComprobantesController
 from controladores.Resguardo import ResguardoController
 from libs.Utiles import LeerIni, GrabarIni, FechaMysql
@@ -79,8 +81,7 @@ class Main(ControladorBase):
         ctacteAction = menu.addAction(u"Cuenta corriente")
         localidadAction = menu.addAction(u"ABM Localidades")
         tipoCompAction = menu.addAction(u"ABM Tipo Comprobantes")
-        gruposAction  = menu.addAction(u"ABM Grupos de articulos")
-        impuestoAction = menu.addAction(u"ABM de impuestos")
+        tipoDocAction = menu.addAction(u"ABM Tipo de documentos")
         menu.addAction(u"Volver")
         action = menu.exec_(QCursor.pos())
 
@@ -96,17 +97,16 @@ class Main(ControladorBase):
         elif action == tipoCompAction:
             tipocomp = TipoComprobantesController()
             tipocomp.view.exec_()
-        elif action == gruposAction:
-            controlador = ABMGruposController()
-            controlador.exec_()
-        elif action == impuestoAction:
-            controlador = ABMImpuestoController()
-            controlador.exec_()
+        elif action == tipoDocAction:
+            tipodoc = ABMTipoDocumentoController()
+            tipodoc.exec_()
 
     def onClickBtnArticulo(self):
         menu = QMenu(self.view)
         altaAction = menu.addAction(u"Alta, bajas y modificaciones")
         informeGrupoAction = menu.addAction(u"Informe de ventas por grupo")
+        gruposAction  = menu.addAction(u"ABM Grupos de articulos")
+        impuestoAction = menu.addAction(u"ABM de impuestos")
         menu.addAction(u"Volver")
         action = menu.exec_(QCursor.pos())
 
@@ -116,6 +116,12 @@ class Main(ControladorBase):
         elif action == informeGrupoAction:
             controlador = InformeVentasPorGrupoController()
             controlador.view.exec_()
+        elif action == gruposAction:
+            controlador = ABMGruposController()
+            controlador.exec_()
+        elif action == impuestoAction:
+            controlador = ABMImpuestoController()
+            controlador.exec_()
 
     def onClickBtnFactura(self):
         menu = QMenu(self.view)
@@ -172,6 +178,7 @@ class Main(ControladorBase):
         consultaAction = menu.addAction(u"Consulta de CUIT")
         constatacionAction = menu.addAction(u"Constatacion de comprobantes")
         consultaCAE = menu.addAction(u"Consulta de CAE")
+        rindeCaeIndividual = menu.addAction(u"Rinde CAEA Individual")
         menu.addAction(u"Volver")
         action = menu.exec_(QCursor.pos())
 
@@ -184,6 +191,9 @@ class Main(ControladorBase):
         elif action == consultaCAE:
             ventana = ConsultaCAEController()
             ventana.view.exec_()
+        elif action == rindeCaeIndividual:
+            ventana = RindeCAEAIndividualController()
+            ventana.exec_()
 
     def onClickBtnCompras(self):
         menu = QMenu(self.view)

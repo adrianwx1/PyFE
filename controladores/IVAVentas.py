@@ -17,11 +17,12 @@ from PyQt5.QtWidgets import QFileDialog, QApplication, QInputDialog
 
 from controladores.ControladorBase import ControladorBase
 from controladores.FE import FEv1
-from libs import Constantes
-from libs.Utiles import AbrirArchivo, EsVerdadero, LeerIni, inicializar_y_capturar_excepciones, GrabarIni
+from libs import Constantes, Ventanas
+from libs.Utiles import AbrirArchivo, EsVerdadero, LeerIni, inicializar_y_capturar_excepciones, GrabarIni, envia_correo
 from modelos.Articulos import Articulo
 from modelos.Cabfact import Cabfact
 from modelos.Detfact import Detfact
+from modelos.ParametrosSistema import ParamSist
 from pyafipws.pyemail import PyEmail
 from vistas.IVAVentas import IVAVentasView
 
@@ -154,15 +155,22 @@ class IVAVentasController(ControladorBase):
                                         text=email_contador if email_contador else '')
         if ok:
             GrabarIni(clave='email_contador', key='param', valor=str(text))
-            pyemail = PyEmail()
-            remitente = 'fe@servinlgsm.com.ar'
             destinatario = str(text).strip()
-            mensaje = "Enviado desde mi Software de Gestion desarrollado por http://www.servinlgsm.com.ar"
             archivo = self.cArchivoGenerado
-            motivo = "Se envia informe de ventas de {}".format(LeerIni(clave='empresa', key='FACTURA'))
-            pyemail.Conectar(servidor=Constantes.SERVER_SMTP,
-                             usuario=Constantes.USUARIO_SMTP,
-                             clave=Constantes.CLAVE_SMTP,
-                             puerto=Constantes.PUERTO_SMTP)
 
-            ok = pyemail.Enviar(remitente, motivo, destinatario, mensaje, archivo)
+            mensaje = "Enviado desde mi Software de Gestion desarrollado por http://www.servinlgsm.com.ar \n\n" \
+                      "No responder este email"
+            motivo = "Se envia informe de ventas de {}".format(LeerIni(clave='empresa', key='FACTURA'))
+            servidor = ParamSist.ObtenerParametro("SERVER_SMTP")
+            clave = ParamSist.ObtenerParametro("CLAVE_SMTP")
+            usuario = ParamSist.ObtenerParametro("USUARIO_SMTP")
+            puerto = ParamSist.ObtenerParametro("PUERTO_SMTP") or 587
+            responder=ParamSist.ObtenerParametro("RESPONDER")
+            # envia_correo(from_address='', to_address='', message='', subject='', password_email='', to_cc='',
+            #              smtp='', smtp_port=587, files=''):
+            ok = envia_correo(from_address=responder, to_address=destinatario, message=mensaje, subject=motivo,
+                         password_email=clave, smtp_port=puerto, smtp_server=servidor, files=archivo)
+            if not ok:
+                Ventanas.showAlert("Sistema", "Ha ocurrido un error al enviar el correo")
+            else:
+                Ventanas.showAlert("Sistema", "Archivo de ventas enviado correctamente")

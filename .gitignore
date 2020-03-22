@@ -102,3 +102,11 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+/pyafipws
+
+/.idea
+
+/certificados/traid.crt
+/certificados/traid.csr
+/certificados/traid.key
